@@ -1,11 +1,18 @@
 import 'package:flutter/material.dart';
-import 'dart:math';
 
-const _chars = 'AaBbCcDdEeFfGgHhIiJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz1234567890';
-Random _rnd = Random();
+class Student {
+  Student({
+    required this.id,
+    required this.name,
+    required this.surname,
+    required this.gpd,
+  });
 
-String getRandomString(int length) => String.fromCharCodes(Iterable.generate(
-    length, (_) => _chars.codeUnitAt(_rnd.nextInt(_chars.length))));
+  final int id;
+  final String name;
+  final String surname;
+  final double gpd;
+}
 
 void main() {
   runApp(const MyApp());
@@ -17,12 +24,12 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'New Student',
       theme: ThemeData(
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: const MyHomePage(title: 'Password Generator'),
+      home: const MyHomePage(title: 'New Student'),
     );
   }
 }
@@ -37,51 +44,95 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  var currentPassword = "";
+  final TextEditingController idController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController surnameController = TextEditingController();
+  final TextEditingController gpdController = TextEditingController();
+  List<Student> students = [];
 
-  void _incrementCounter() {
-    setState(() {
-      currentPassword = getRandomString(8);
-    });
+  void _addStudent() {
+    final id = int.tryParse(idController.text) ?? 0;
+    final name = nameController.text;
+    final surname = surnameController.text;
+    final gpd = double.tryParse(gpdController.text) ?? 0;
+
+    if (id > 0 && name.isNotEmpty && surname.isNotEmpty && gpd > 0) {
+      final newStudent = Student(id: id, name: name, surname: surname, gpd: gpd);
+      setState(() {
+        students.add(newStudent);
+      });
+
+      // Clear the input fields
+      idController.clear();
+      nameController.clear();
+      surnameController.clear();
+      gpdController.clear();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        leading: Icon(Icons.access_alarm),
-        actions: [Icon(Icons.abc_outlined), Icon(Icons.account_box)],
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
       ),
-      body: Center(
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Text(
-              '$currentPassword',
-              style: Theme.of(context).textTheme.headlineMedium,
+            TextField(
+              controller: idController,
+              decoration: const InputDecoration(labelText: 'ID'),
             ),
-            SizedBox(height: 16), // Add some space between the text and the icon
+            TextField(
+              controller: nameController,
+              decoration: const InputDecoration(labelText: 'Name'),
+            ),
+            TextField(
+              controller: surnameController,
+              decoration: const InputDecoration(labelText: 'Surname'),
+            ),
+            TextField(
+              controller: gpdController,
+              decoration: const InputDecoration(labelText: 'GPD'),
+            ),
             ElevatedButton(
-              onPressed: _incrementCounter,
-              child: Text("Generate Password"),
+              onPressed: _addStudent,
+              child: Text("Add Student"),
+            ),
+            SizedBox(height: 16), // Add some spacing
+            Text("", style: TextStyle(fontSize: 20)),
+            Expanded(
+              child: ListView.builder(
+                itemCount: students.length,
+                itemBuilder: (context, index) {
+                  final student = students[index];
+                  return Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("ID: ${student.id}"),
+                          Text("GPD: ${student.gpd.toStringAsFixed(2)}"),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text("Name: ${student.name}"),
+                          Text("Surname: ${student.surname}"),
+                        ],
+                      ),
+                    ],
+                  );
+                },
+              ),
             ),
           ],
         ),
-      ),
-      bottomNavigationBar: BottomNavigationBar(
-        items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: Icon(Icons.home),
-            label: 'Home',
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.search), label: "Search"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.settings),
-            label: 'Settings',
-          ),
-        ],
       ),
     );
   }
